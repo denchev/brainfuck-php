@@ -14,8 +14,6 @@ class BrainFuck {
 
 	private $output = '';
 
-	private $loop_starts = true;
-
 	private $input_pointer = 0;
 
 	public function __construct( $code, $input = "" ) {
