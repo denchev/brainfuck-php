@@ -155,42 +155,38 @@ class BrainFuck {
 		return chr( $this->get_byte() );
 	}
 
-	private function increment_pointer() {
-
-		++$this->cell_pointer;
+	private function create_cell() {
 
 		if( ! isset( $this->cells[ $this->cell_pointer ] ) ) {
 
 			$this->cells[ $this->cell_pointer ] = 0;
 		}
+	}
+
+	private function increment_pointer() {
+
+		++$this->cell_pointer;
+
+		$this->create_cell();
 	}
 
 	private function decrement_pointer() {
 
 		--$this->cell_pointer;
 
-		if( ! isset( $this->cells[ $this->cell_pointer ] ) ) {
-
-			$this->cells[ $this->cell_pointer ] = 0;
-		}
+		$this->create_cell();
 	}
 
 	private function increment_byte() {
 
-		if( ! isset( $this->cells[ $this->cell_pointer ] ) ) {
-
-			$this->cells[ $this->cell_pointer ] = 0;
-		}
+		$this->create_cell();
 
 		$this->cells[ $this->cell_pointer ]++;
 	}
 
 	private function decrement_byte() {
 
-		if( ! isset( $this->cells[ $this->cell_pointer ] ) ) {
-
-			$this->cells[ $this->cell_pointer ] = 0;
-		}
+		$this->create_cell();
 
 		$this->cells[ $this->cell_pointer ]--;
 	}
