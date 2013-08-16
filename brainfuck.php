@@ -70,33 +70,20 @@ class BrainFuck {
 
 					$byte = $this->get_byte();
 
-					debug( 'Start loop at byte ' . $byte );
-
-					$this->loop_starts = $i;
-
 					if( $byte == 0 ) {
 
-						debug( 'End loop' );
-
-						// Jump $i to after this loop ends
 						$i = $this->loop_end_position($i);
-
-						$this->loop_starts = false;
 					}
 				break;
 
 				// End loop
 				case ']';
 
-					debug( 'End loop get byte' );
 					$byte = $this->get_byte();
 
-					if( $byte == 0 ) {
+					if( $byte != 0 ) {
 
-						$this->loop_starts = false;
-					} else {
-
-						$i = $this->loop_starts;
+						$i = $this->loop_start_position($i);
 					}
 
 				break;
@@ -110,9 +97,52 @@ class BrainFuck {
 		return $this->output;
 	}
 
+	private function loop_start_position( $position ) {
+
+		$has_prev_loops = 0;
+
+		for( $i = $position; $i >= 0; $i-- ) {
+
+			$char = $this->chars[ $i ];
+
+			if( $char == ']' ) {
+
+				$has_prev_loops++;
+
+			} else if ( $char == '[' ) {
+
+				if( --$has_prev_loops == 0 ) {
+
+					return $i;
+				}
+			}
+		}
+
+		throw new Exception('Cannot find loop start.');
+	}
+
 	private function loop_end_position( $position ) {
 
-		return strpos( $this->input, ']', $position );
+		$has_next_loops = 0;
+
+		for( $i = $position; $i < count( $this->chars ); $i++ ) {
+
+			$char = $this->chars[ $i ];
+
+			if( $char == ']' ) {
+
+				if( --$has_next_loops == 0 ) {
+
+					return $i;
+				}
+
+			} else if ( $char == '[' ) {
+
+				$has_next_loops++;
+			}
+		}
+
+		throw new Exception('Cannot find loop end.');
 	}
 
 	private function get_byte() {
@@ -166,15 +196,27 @@ class BrainFuck {
 	}
 }
 
+// List of examples: http://codegolf.com/brainfuck
+
 // Hello world!
 $input = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.";
 
 // Cat
-//$input = '>>[-]<<[->>+<<]';
+$input = '>>[-]<<[->>+<<]';
 
+// Just another brainfuck hacker.
+$input = "+++[>+++++<-]>[>+>+++>+>++>+++++>++<[++<]>---]>->-.[>++>+<<--]>--.--.+.>>>++.<<.<------.+.+++++.>>-.<++++.<--.>>>.<<---.<.-->-.>+.[+++++.---<]>>[.--->]<<.<+.++.++>+++[.<][.]<++.";
+
+// Square numbers
+$input = "++++[>+++++<-]>[<+++++>-]+<+[>[>+>+<<-]++>>[<<+>>-]>>>[-]++>[-]+>>>+[[-]++++++>>>]<<<[[<++++++++<++>>-]+<.<[>----<-]<]<<[>>>>>[>>>[-]+++++++++<[>-<-]+++++++++>[-[<->-]+[<<<]]<[>+<-]>]<<-]<<-]";
+
+$start = microtime(true);
 $brainfuck = new BrainFuck( $input );
 $output = $brainfuck->compile();
+$end = microtime(true);
 
 echo $output;
+
+echo '<br><br>Compilation time: ' . ($end - $start);
 
 ?>
