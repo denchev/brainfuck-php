@@ -29,7 +29,7 @@ class BrainFuck {
 
 		$this->chars = $this->split( $this->code );
 
-		for( $i = 0, $n = count( $this->chars ); $i < $n; $i++ ) {
+		for( $i = 0, $n = count( $this->chars ); $i < $n; $i += 1 ) {
 
 			$char = $this->chars[ $i ];
 
@@ -66,10 +66,10 @@ class BrainFuck {
 				// Get current data pointer cell and at it to output
 				case '.' :
 
-					$ascii = $this->byte_to_ascii();
-
 					if( $this->get_byte() == 0 )
 						return $this->output;
+
+					$ascii = $this->byte_to_ascii();
 
 					$this->output .= $ascii;
 
