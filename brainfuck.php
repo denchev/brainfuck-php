@@ -1,7 +1,5 @@
 <?php
 
-set_time_limit( 5 );
-
 class BrainFuck {
 
 	private $input = array();
@@ -18,27 +16,18 @@ class BrainFuck {
 
 	private $loop_starts = true;
 
-	private $optional_input_pointer = 0;
+	private $input_pointer = 0;
 
 	public function __construct( $code, $input = "" ) {
 
-		// Do sanitize
-
 		$this->code = preg_replace( '/[^<>+\-\.,\[\]]/', '', $code );
 
-		$this->input = preg_split( '//', $input );
-		array_pop( $this->input );
-		array_shift( $this->input );
+		$this->input = $this->split( $input );
 	}
 
 	public function compile() {
 
-		// Check if there is optional input to play with
-		$code = explode( '!', $this->code );
-
-		$this->chars = preg_split( '//', $this->code );
-		array_pop( $this->chars );
-		array_shift( $this->chars );
+		$this->chars = $this->split( $this->code );
 
 		for( $i = 0, $n = count( $this->chars ); $i < $n; $i++ ) {
 
@@ -89,20 +78,17 @@ class BrainFuck {
 				// Begin loop
 				case '[' :
 
-					$byte = $this->get_byte();
-
-					if( $byte == 0 ) {
+					if( $this->get_byte() == 0 ) {
 
 						$i = $this->loop_end_position($i);
 					}
+
 				break;
 
 				// End loop
 				case ']' ;
 
-					$byte = $this->get_byte();
-
-					if( $byte != 0 ) {
+					if( $this->get_byte() != 0 ) {
 
 						$i = $this->loop_start_position($i);
 					}
@@ -112,23 +98,24 @@ class BrainFuck {
 				// Input
 				case ',' :
 
-					if( isset( $this->input[ $this->optional_input_pointer  ] ) ) {
+					$this->cells[ $this->cell_pointer ] = isset( $this->input[ $this->input_pointer  ] ) ? ord( $this->input[ $this->input_pointer++ ] ) : 0;
 
-						$this->cells[ $this->cell_pointer ] = ord( $this->input[ $this->optional_input_pointer ] );
-
-						$this->optional_input_pointer++;
-					} else {
-
-						$this->cells[ $this->cell_pointer ] = 0;
-					}
 				break;
 
 			}
 
-
 		}
 
 		return $this->output;
+	}
+
+	private function split( $input ) {
+
+		$input = preg_split( '//', $input );
+		array_pop( $input);
+		array_shift( $input );
+
+		return $input;
 	}
 
 	private function loop_start_position( $position ) {
@@ -189,85 +176,40 @@ class BrainFuck {
 		return chr( $this->get_byte() );
 	}
 
+	private function init_cell() {
+
+		if( ! isset( $this->cells[ $this->cell_pointer ] ) )
+			$this->cells[ $this->cell_pointer ] = 0;
+	}
+
 	private function increment_pointer() {
 
 		++$this->cell_pointer;
 
-		if( ! isset( $this->cells[ $this->cell_pointer ] ) )
-			$this->cells[ $this->cell_pointer ] = 0;
+		$this->init_cell();
 	}
 
 	private function decrement_pointer() {
 
 		--$this->cell_pointer;
 
-		if( ! isset( $this->cells[ $this->cell_pointer ] ) )
-			$this->cells[ $this->cell_pointer ] = 0;
+		$this->init_cell();
 	}
 
 	private function increment_byte() {
 
-		if( ! isset( $this->cells[ $this->cell_pointer ] ) )
-			$this->cells[ $this->cell_pointer ] = 0;
+		$this->init_cell();
 
 		$this->cells[ $this->cell_pointer ]++;
 	}
 
 	private function decrement_byte() {
 
-		if( ! isset( $this->cells[ $this->cell_pointer ] ) )
-			$this->cells[ $this->cell_pointer ] = 0;
+		$this->init_cell();
 
 		$this->cells[ $this->cell_pointer ]--;
 	}
 }
 
-/*
- * TESTS
- */
-
-// List of examples: http://codegolf.com/brainfuck
-
-// Hello world!
-$input = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.";
-$bf = new BrainFuck( $input );
-echo $bf->compile();
-echo '<br><br>';
-
-// Just another brainfuck hacker.
-$input = "+++[>+++++<-]>[>+>+++>+>++>+++++>++<[++<]>---]>->-.[>++>+<<--]>--.--.+.>>>++.<<.<------.+.+++++.>>-.<++++.<--.>>>.<<---.<.-->-.>+.[+++++.---<]>>[.--->]<<.<+.++.++>+++[.<][.]<++.";
-$bf = new BrainFuck( $input );
-echo $bf->compile();
-echo '<br><br>';
-
-// Square numbers
-$input = "++++[>+++++<-]>[<+++++>-]+<+[>[>+>+<<-]++>>[<<+>>-]>>>[-]++>[-]+>>>+[[-]++++++>>>]<<<[[<++++++++<++>>-]+<.<[>----<-]<]<<[>>>>>[>>>[-]+++++++++<[>-<-]+++++++++>[-[<->-]+[<<<]]<[>+<-]>]<<-]<<-]";
-$bf = new BrainFuck( $input );
-echo $bf->compile();
-echo '<br><br>';
-
-// ROT-13 (unique -> havdhr)
-$input = "+[,+[-[>+>+<<-]>[<+>-]+>>++++++++[<-------->-]<-[<[-]>>>+[<+<+>>-]<[>+<-]<[<++>>>+[<+<->>-]<[>+<-]]>[<]<]>>[-]<<<[[-]<[>>+>+<<<-]>>[<<+>>-]>>++++++++[<-------->-]<->>++++[<++++++++>-]<-<[>>>+<<[>+>[-]<<-]>[<+>-]>[<<<<<+>>>>++++[<++++++++>-]>-]<<-<-]>[<<<<[-]>>>>[<<<<->>>>-]]<<++++[<<++++++++>>-]<<-[>>+>+<<<-]>>[<<+>>-]+>>+++++[<----->-]<-[<[-]>>>+[<+<->>-]<[>+<-]<[<++>>>+[<+<+>>-]<[>+<-]]>[<]<]>>[-]<<<[[-]<<[>>+>+<<<-]>>[<<+>>-]+>------------[<[-]>>>+[<+<->>-]<[>+<-]<[<++>>>+[<+<+>>-]<[>+<-]]>[<]<]>>[-]<<<<<------------->>[[-]+++++[<<+++++>>-]<<+>>]<[>++++[<<++++++++>>-]<-]>]<[-]++++++++[<++++++++>-]<+>]<.[-]+>>+<]>[[-]<]<]";
-$bf = new BrainFuck( $input, 'unique' );
-echo $bf->compile();
-echo '<br><br>';
-
-// Brainfuck self
-$input = ",[>>++++++[-<+++++++>]<+<[->.<]>+++.<++++[->++++<]>.>,]";
-$bf = new BrainFuck( $input, 'brainfuck' );
-echo $bf->compile();
-echo '<br><br>';
-
-// Output same
-$input = ",[.,]";
-$bf = new BrainFuck( $input, 'lenny' );
-echo $bf->compile();
-echo '<br><br>';
-
-// Reverse input
-$input = ",[>,]<[.<]";
-$bf = new BrainFuck( $input, 'lenny' );
-echo $bf->compile();
-echo '<br><br>';
 
 ?>
