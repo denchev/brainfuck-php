@@ -1,10 +1,5 @@
 <?php
 
-function debug( $msg, $emphasis = false ) {
-
-	//echo $msg . '<br>';
-}
-
 class BrainFuck {
 
 	private $input;
@@ -19,6 +14,8 @@ class BrainFuck {
 
 	private $loop_starts = true;
 
+	private $optional_input_pointer = -1;
+
 	public function __construct( $input ) {
 
 		// Do sanitize
@@ -28,7 +25,17 @@ class BrainFuck {
 
 	public function compile() {
 
-		$this->chars = preg_split( '//', $this->input );
+		// Check if there is optional input to play with
+		$input = explode( '!', $this->input );
+
+		if( isset( $input[1] ) ) {
+
+			$optional_input = $input[1];
+		}
+
+		$this->chars = preg_split( '//', $input[0] );
+		array_pop( $this->chars );
+		array_shift( $this->chars );
 
 		for( $i = 0, $n = count( $this->chars ); $i < $n; $i++ ) {
 
@@ -38,31 +45,37 @@ class BrainFuck {
 
 				// Increment byte
 				case '+':
-					debug( 'Increment byte' );
+
 					$this->increment_byte();
+
 				break;
 
 				// Decrement byte
 				case '-':
-					debug( 'Decrement byte' );
+
 					$this->decrement_byte();
+
 				break;
 
 				// Increment data pointer
 				case '>':
-					debug( 'Increment data pointer' );
+
 					$this->increment_pointer();
+
 				break;
 
 				// Decrement data pointer
 				case '<':
-					debug( 'Decrement data pointer' );
+
 					$this->decrement_pointer();
+
 				break;
 
 				// Get current data pointer cell and at it to output
 				case '.':
+
 					$this->output .= $this->byte_to_ascii();
+
 				break;
 
 				// Begin loop
@@ -70,7 +83,7 @@ class BrainFuck {
 
 					$byte = $this->get_byte();
 
-					if( $byte == 0 ) {
+					if( $byte === 0 ) {
 
 						$i = $this->loop_end_position($i);
 					}
@@ -84,11 +97,17 @@ class BrainFuck {
 					if( $byte != 0 ) {
 
 						$i = $this->loop_start_position($i);
+					} else {
+
 					}
 
 				break;
 
+				// Input
 				case ',':
+
+					$this->cells[ $this->cell_pointer ] = isset( $optional_input[ ++$this->optional_input_pointer] ) ? ord( $optional_input[$this->optional_input_pointer] ) : 0;
+
 				break;
 
 			}
@@ -205,6 +224,15 @@ $input = "+++[>+++++<-]>[>+>+++>+>++>+++++>++<[++<]>---]>->-.[>++>+<<--]>--.--.+
 
 // Square numbers
 $input = "++++[>+++++<-]>[<+++++>-]+<+[>[>+>+<<-]++>>[<<+>>-]>>>[-]++>[-]+>>>+[[-]++++++>>>]<<<[[<++++++++<++>>-]+<.<[>----<-]<]<<[>>>>>[>>>[-]+++++++++<[>-<-]+++++++++>[-[<->-]+[<<<]]<[>+<-]>]<<-]<<-]";
+
+// ROT-13 (unique -> havdhr)
+$input = "+[,+[-[>+>+<<-]>[<+>-]+>>++++++++[<-------->-]<-[<[-]>>>+[<+<+>>-]<[>+<-]<[<++>>>+[<+<->>-]<[>+<-]]>[<]<]>>[-]<<<[[-]<[>>+>+<<<-]>>[<<+>>-]>>++++++++[<-------->-]<->>++++[<++++++++>-]<-<[>>>+<<[>+>[-]<<-]>[<+>-]>[<<<<<+>>>>++++[<++++++++>-]>-]<<-<-]>[<<<<[-]>>>>[<<<<->>>>-]]<<++++[<<++++++++>>-]<<-[>>+>+<<<-]>>[<<+>>-]+>>+++++[<----->-]<-[<[-]>>>+[<+<->>-]<[>+<-]<[<++>>>+[<+<+>>-]<[>+<-]]>[<]<]>>[-]<<<[[-]<<[>>+>+<<<-]>>[<<+>>-]+>------------[<[-]>>>+[<+<->>-]<[>+<-]<[<++>>>+[<+<+>>-]<[>+<-]]>[<]<]>>[-]<<<<<------------->>[[-]+++++[<<+++++>>-]<<+>>]<[>++++[<<++++++++>>-]<-]>]<[-]++++++++[<++++++++>-]<+>]<.[-]+>>+<]>[[-]<]<]!unique";
+
+// Brainfuck self
+#$input = ",[>>++++++[-<+++++++>]<+<[->.<]>+++.<++++[->++++<]>.>,]!brainfuck";
+
+// Output same
+#$input = ",[.,]!lenny";
 
 $start = microtime(true);
 $brainfuck = new BrainFuck( $input );
