@@ -44,4 +44,10 @@ $bf = new BrainFuck( $input, 'brainfuck' );
 echo $bf->compile();
 echo '<br><br>';
 
+// String to reverse to string to reverse
+$input = '+++ >> ,[>,] <[<] <- [ >> [.>] <[.<] <-]';
+$bf = new BrainFuck( $input, 'a1b2c3'); // Must output a1b2c33c2b1aa1b2c33c2b1a
+echo $bf->compile();
+echo '<br><br>';
+
 ?>
