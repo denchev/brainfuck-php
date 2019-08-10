@@ -5,11 +5,10 @@ PHP interpreter for brainfuck
 
 =============
 
-Passes all tests.
+Run unit tests with this command:
 
-TODO:
+`.\vendor\bin\phpunit --bootstrap .\vendor\autoload.php .\tests\BrainfuckTest`
 
-- Proper tests with PHPUnit.
 
 =============
 
