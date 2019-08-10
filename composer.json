@@ -1,0 +1,14 @@
+{
+    "name": "denchev/brainfuck-php",
+    "description": "Brainfuck interpreter",
+    "authors": [
+        {
+            "name": "Marush Denchev",
+            "email": "avreon@gmail.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "6"
+    }
+}
