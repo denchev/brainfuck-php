@@ -1,14 +1,14 @@
 <?php
 
-class BrainFuck {
-
-	private $input = array();
+class BrainFuck
+{
+	private $input = [];
 
 	private $code;
 
-	private $chars = array();
+	private $chars = [];
 
-	private $cells = array();
+	private $cells = [];
 
 	private $cell_pointer = 0;
 
@@ -16,16 +16,16 @@ class BrainFuck {
 
 	private $input_pointer = 0;
 
-	public function __construct( $code, $input = "" ) {
-		$this->code = preg_replace( '/[^<>+\-\.,\[\]]/', '', $code );
-		$this->input = $this->split( $input );
+	public function __construct($code, $input = '') {
+		$this->code = preg_replace('/[^<>+\-\.,\[\]]/', '', $code);
+		$this->input = $this->split($input);
 	}
 
 	public function compile() {
 		$this->chars = $this->split($this->code);
 
-		for ($i = 0, $n = count( $this->chars ); $i < $n; $i += 1) {
-			$char = $this->chars[ $i ];
+		for ($i = 0, $n = count($this->chars); $i < $n; $i += 1) {
+			$char = $this->chars[$i];
 
 			switch ($char) {
 				// Increment byte
@@ -74,7 +74,7 @@ class BrainFuck {
 
 				// Input
 				case ',':
-					$this->cells[ $this->cell_pointer ] = isset( $this->input[ $this->input_pointer  ] ) ? ord( $this->input[ $this->input_pointer++ ] ) : 0;
+					$this->cells[ $this->cell_pointer ] = isset($this->input[$this->input_pointer]) ? ord($this->input[$this->input_pointer++ ]) : 0;
 				break;
 
 			}
@@ -85,7 +85,7 @@ class BrainFuck {
 	}
 
 	private function split( $input ) {
-		$input = preg_split( '//', $input );
+		$input = preg_split('//', $input);
 		array_pop( $input);
 		array_shift( $input );
 
@@ -159,6 +159,6 @@ class BrainFuck {
 
 	private function decrement_byte() {
 		$this->init_cell();
-		$this->cells[ $this->cell_pointer ]--;
+		$this->cells[$this->cell_pointer]--;
 	}
 }
